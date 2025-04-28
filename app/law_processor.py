@@ -106,27 +106,27 @@ def extract_locations(xml_data, keyword):
             if keyword_clean in clean(항내용) and has_항번호:
                 locations.append((조식별, 항번호, None, None, 항내용.strip()))
             for 호 in 항.findall("호"):
-                호번호 = normalize_number(호.findtext("호번호", "").strip())
+                raw_호번호 = 호.findtext("호번호", "").strip().replace(".", "")
                 호내용 = 호.findtext("호내용") or ""
                 if keyword_clean in clean(호내용):
-                    locations.append((조식별, 항번호, 호번호, None, 호내용.strip()))
+                    locations.append((조식별, 항번호, raw_호번호, None, 호내용.strip()))
                 for 목 in 호.findall("목"):
-                    목번호 = normalize_number(목.findtext("목번호", "").strip())
+                    raw_목번호 = 목.findtext("목번호", "").strip().replace(".", "")
                     목내용 = 목.findtext("목내용") or ""
                     if keyword_clean in clean(목내용):
-                        locations.append((조식별, 항번호, 호번호, 목번호, 목내용.strip()))
+                        locations.append((조식별, 항번호, raw_호번호, raw_목번호, 목내용.strip()))
     return locations
 
 def format_location(loc):
     조, 항, 호, 목, 텍스트 = loc
+    parts = [조]
+    if 항:
+        parts.append(f"제{항}항")
+    if 호:
+        parts.append(f"제{호}호")
     if 목:
-        return f"{조}제{항}항제{호}호제{목}목"
-    elif 호:
-        return f"{조}제{항}항제{호}호"
-    elif 항:
-        return f"{조}제{항}항"
-    else:
-        return f"{조}"
+        parts.append(f"제{목}목")
+    return "".join(parts)
 
 def run_search_logic(query, unit):
     result_dict = {}
